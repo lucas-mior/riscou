@@ -36,10 +36,7 @@ fn main() {
     println!("path: {}", path);
 
     let extras = Vec::from_iter(argv[2..].iter().cloned());
-    for ext in extras {
-        println!("extras: {}", ext);
-    }
-    preview(&path);
+    preview(&path, &extras);
     // return 0;
 }
 
@@ -107,7 +104,7 @@ Rule(("video/.*",               &["vid.sh", "%riscou-filename%", "%riscou-extra0
 Rule((".+",                     &["file", "--mime-type", "%riscou-filename%"])),
 ];
 
-fn preview(filename: & String) {
+fn preview(filename: & String, extras: & Vec<String>) {
     for rule in RULES {
         let mime = rule.mime();
         let comp_conf;
@@ -123,16 +120,25 @@ fn preview(filename: & String) {
         }
         let r_conf = Regex::new(comp_conf).unwrap();
         if r_conf.is_match(&comp_file) {
+            let r_extras = Regex::new(r"%riscou-extra([0-9])%").unwrap();
             let args: &[&str] = rule.args().clone();
             let mut cargs: Vec<&str> = vec![];
             for arg in args.iter() {
                 if arg == &("%riscou-filename%") {
                     cargs.push(filename);
+                } else if r_extras.is_match(arg) {
+                    let caps = r_extras.captures(arg).unwrap();
+                    let x = caps.get(1).map_or("", |m| m.as_str());
+                    let i = x.parse::<usize>().unwrap();
+                    if i < extras.len() {
+                        cargs.push(&extras[i]);
+                    }
                 } else {
                     cargs.push(arg);
                 }
             }
-            Command::new(cargs[0]).args(cargs.iter()).exec();
+            println!("RUNNING: {:?}", cargs);
+            Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
         } else {
             continue;

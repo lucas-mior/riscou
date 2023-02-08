@@ -1,6 +1,12 @@
+extern crate tree_magic;
+
 use std::process::exit;
 use std::fs;
 use std::env;
+use std::io;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
 // use regex::Regex;
 use named_tuple::named_tuple;
 
@@ -30,7 +36,7 @@ fn main() {
     for ext in extras {
         println!("extras: {}", ext);
     }
-    preview();
+    preview(&path);
     // return 0;
 }
 
@@ -100,15 +106,22 @@ Rule(("video/.*",               &["vid.sh", "%riscou-filename%", "%riscou-extra0
 Rule((".+",                     &["file", "--mime-type", "%riscou-filename%"])),
 ];
 
-fn preview() {
-
+fn preview(filename: & String) {
     for rule in RULES {
         let mime = rule.mime();
+        let comp_conf;
+        let comp_file: String;
+        // let mut comp_file;
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
-            println!("FPATH: Rule: {:?}", rule); 
+            comp_conf = &mime[5..];
+            comp_file = filename.to_string();
         } else {
-            println!("NOT: Rule: {:?}", rule);
+            comp_conf = &mime;
+            let path = Path::new(filename);
+            comp_file = tree_magic::from_filepath(path);
         }
+        println!("comp_conf: {}", comp_conf);
+        println!("comp_file: {}", comp_file);
     }
 }
     //     mime_conf = rules[i].mime;

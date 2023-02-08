@@ -1,8 +1,7 @@
 use std::process::exit;
 use std::fs;
-use std::io::Write;
 use std::env;
-use regex::Regex;
+// use regex::Regex;
 use named_tuple::named_tuple;
 
 fn usage() {
@@ -16,7 +15,7 @@ extras: extra arguments passed to command");
 
 fn main() {
     let argv: Vec<String> = env::args().collect();
-    // let mut extras: Vec<String> = vec![argv.len().to_string()];
+    // let mut extras: Vec<String> = [argv.len().to_string()];
     if argv.len() <= 1 {
         usage();
     }
@@ -27,7 +26,7 @@ fn main() {
     };
     println!("path: {}", path);
 
-    let extras = Vec::from_iter(argv[1..].iter().cloned());
+    let extras = Vec::from_iter(argv[2..].iter().cloned());
     for ext in extras {
         println!("extras: {}", ext);
     }
@@ -66,44 +65,44 @@ named_tuple!(
     #[derive(Clone, Debug)]
     struct Rule<'a> {
         mime: &'a str,
-        args: Vec<&'a str>,
+        args: &'static [&'static str],
+
     }
 );
 
+static RULES: &[Rule<'_>] = &[
+Rule(("fpath v\\S[1,3]::",      &["vfile.sh", "%riscou-filename%"])),
+Rule(("fpath g\\S[1,3]::",      &["gdir.sh", "%riscou-filename%"])),
+Rule(("fpath .+\\.fen$",        &["fen.sh", "%riscou-filename%"])),
+Rule(("text/.*",                &["bat", "-p", "--pager=never", "--color=always", "%riscou-filename%"])),
+Rule(("inode/directory",        &["ls", "-1A", "--color", "%riscou-filename%"])),
+Rule(("ms(word|-excel|-power)", &["printf", "💩💩💩💩💩💩💩💩💩\n%s\n💩💩💩💩💩💩💩💩💩", "%riscou-filename%"])),
+Rule(("opendoc.+spreadsheet",   &["ods.sh", "%riscou-filename%"])),
+Rule(("officed.+spreadsheet",   &["xlsx.sh", "%riscou-filename%"])),
+Rule(("office.+word",           &["docx.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("office.+pres",           &["ppt.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("opendocument",           &["odt2txt", "%riscou-filename%"])),
+Rule(("application/pdf",        &["pdf.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("application/csv",        &["column", "-t", "-s", ",", "%riscou-filename%"])),
+Rule(("application/json",       &["head", "-n", "40", "%riscou-filename%"])),
+Rule(("application/.*execu.+",  &["execu.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("application/x-objec.+",  &["execu.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("application/zip",        &["unzip", "-l", "%riscou-filename%"])),
+Rule(("application/gzip",       &["tar", "tf", "%riscou-filename%"])),
+Rule(("application/x-subrip",   &["/usr/bin/cat", "%riscou-filename%"])),
+Rule(("fpath .+\\.ff$",         &["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("fpath .+\\.[1-9]$",      &["man", "%riscou-filename%"])),
+Rule(("image/.*dwg",            &["stat", "%riscou-filename%"])),
+Rule(("image/.*xml",            &["head", "-n", "40", "%riscou-filename%"])),
+Rule(("image/.*",               &["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("audio/.*",               &["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("video/.*",               &["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule((".+",                     &["file", "--mime-type", "%riscou-filename%"])),
+];
+
 fn preview() {
 
-    let rules: &[Rule] = &[
-    Rule(("fpath v\\S[1,3]::", vec!["vfile.sh", "%riscou-filename%"])),
-    Rule(("fpath g\\S[1,3]::", vec!["gdir.sh", "%riscou-filename%"])),
-    Rule(("fpath .+\\.fen$", vec!["fen.sh", "%riscou-filename%"])),
-    Rule(("text/.*", vec!["bat", "-p", "--pager=never", "--color=always", "%riscou-filename%"])),
-    Rule(("inode/directory", vec!["ls", "-1A", "--color", "%riscou-filename%"])),
-    Rule(("ms(word|-excel|-power)", vec!["printf", "💩💩💩💩💩💩💩💩💩\n%s\n💩💩💩💩💩💩💩💩💩", "%riscou-filename%"])),
-    Rule(("opendoc.+spreadsheet", vec!["ods.sh", "%riscou-filename%"])),
-    Rule(("officed.+spreadsheet", vec!["xlsx.sh", "%riscou-filename%"])),
-    Rule(("office.+word",         vec!["docx.sh", "%riscou-filename%", "%riscou-extra0%"])),
-    Rule(("office.+pres", vec!["ppt.sh", "%riscou-filename%", "%riscou-extra0%"])),
-    Rule(("opendocument", vec!["odt2txt", "%riscou-filename%"])),
-    Rule(("application/pdf", vec!["pdf.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule(("application/csv", vec!["column", "-t", "-s", ",", "%riscou-filename%"])),
-    Rule(("application/json", vec!["head", "-n", "40", "%riscou-filename%"])),
-    Rule(("application/.*execu.+", vec!["execu.sh", "%riscou-filename%", "%riscou-extra0%"])),
-    Rule(("application/x-objec.+", vec!["execu.sh", "%riscou-filename%", "%riscou-extra0%"])),
-    Rule(("application/zip", vec!["unzip", "-l", "%riscou-filename%"])),
-    Rule(("application/gzip", vec!["tar", "tf", "%riscou-filename%"])),
-    Rule(("application/x-subrip", vec!["/usr/bin/cat", "%riscou-filename%"])),
-    Rule(("fpath .+\\.ff$", vec!["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule(("fpath .+\\.[1-9]$", vec!["man", "%riscou-filename%"])),
-    Rule(("fpath .+\\.blend$", vec!["blender.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule(("image/.*dwg", vec!["stat", "%riscou-filename%"])),
-    Rule(("image/.*xml", vec!["head", "-n", "40", "%riscou-filename%"])),
-    Rule(("image/.*", vec!["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule(("audio/.*", vec!["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule(("video/.*", vec!["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
-    Rule((".+", vec!["file", "--mime-type", "%riscou-filename%"])),
-    ];
-
-    for rule in rules {
+    for rule in RULES {
         let mime = rule.mime();
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
             println!("FPATH: Rule: {:?}", rule); 

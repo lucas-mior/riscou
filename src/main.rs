@@ -123,7 +123,6 @@ fn preview(filename: & String) {
         }
         let r_conf = Regex::new(comp_conf).unwrap();
         if r_conf.is_match(&comp_file) {
-            println!("MATCH: {} == {}", r_conf, comp_file);
             let args: &[&str] = rule.args().clone();
             let mut cargs: Vec<&str> = vec![];
             for arg in args.iter() {
@@ -136,7 +135,6 @@ fn preview(filename: & String) {
             Command::new(cargs[0]).args(cargs.iter()).exec();
             break;
         } else {
-            println!("NOMATCH: {} != {}", r_conf, comp_file);
             continue;
         }
     }

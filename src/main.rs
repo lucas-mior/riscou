@@ -3,15 +3,11 @@ extern crate tree_magic;
 use std::process::exit;
 use std::fs;
 use std::env;
-use std::io;
-use std::io::prelude::*;
-use std::fs::File;
 use std::path::Path;
 use regex::Regex;
 use named_tuple::named_tuple;
 use std::process::Command;
 use std::os::unix::process::CommandExt;
-use std::io::Error;
 
 fn usage() {
     println!(
@@ -24,7 +20,6 @@ extras: extra arguments passed to command");
 
 fn main() {
     let argv: Vec<String> = env::args().collect();
-    // let mut extras: Vec<String> = [argv.len().to_string()];
     if argv.len() <= 1 {
         usage();
     }
@@ -33,37 +28,10 @@ fn main() {
         Ok(path) => path.to_string_lossy().into_owned(),
         Err(_) => {usage(); exit(1)},
     };
-    println!("path: {}", path);
 
     let extras = Vec::from_iter(argv[2..].iter().cloned());
     preview(&path, &extras);
-    // return 0;
 }
-
-// static void parse_args(char *cargs[]) {
-
-//     r_filename = Regex::new(r".*(%riscou-filename%).*").unwrap();
-//     r_extras = Regex::new(r"%riscou-extra([0-9])%").unwrap();
-
-//     for (size_t i = 0; i < 10; i++) {
-//         if (cargs[i] == NULL)
-//             break;
-
-//         if (!regexec(&r_filename, cargs[i], 10, groups, 0)) {
-//             cargs[i] = filename;
-//         }
-//         if (!regexec(&r_extras, cargs[i], 10, groups, 0)) {
-//             int num;
-//             char copy[strlen(cargs[i]) + 1];
-//             strcpy(copy, cargs[i]);
-//             copy[groups[1].rm_eo] = 0;
-//             num = atoi(copy + groups[1].rm_so);
-//             cargs[i] = extras[num];
-//         }
-//     }
-//     execvp(cargs[0], cargs);
-//     return;
-// }
 
 named_tuple!(
     #[derive(Clone, Debug)]
@@ -137,7 +105,6 @@ fn preview(filename: & String, extras: & Vec<String>) {
                     cargs.push(arg);
                 }
             }
-            println!("RUNNING: {:?}", cargs);
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
         } else {

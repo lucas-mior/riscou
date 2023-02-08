@@ -9,6 +9,9 @@ use std::fs::File;
 use std::path::Path;
 use regex::Regex;
 use named_tuple::named_tuple;
+use std::process::Command;
+use std::os::unix::process::CommandExt;
+use std::io::Error;
 
 fn usage() {
     println!(
@@ -121,6 +124,16 @@ fn preview(filename: & String) {
         let r_conf = Regex::new(comp_conf).unwrap();
         if r_conf.is_match(&comp_file) {
             println!("MATCH: {} == {}", r_conf, comp_file);
+            let args: &[&str] = rule.args().clone();
+            let mut cargs: Vec<&str> = vec![];
+            for arg in args.iter() {
+                if arg == &("%riscou-filename%") {
+                    cargs.push(filename);
+                } else {
+                    cargs.push(arg);
+                }
+            }
+            Command::new(cargs[0]).args(cargs.iter()).exec();
             break;
         } else {
             println!("NOMATCH: {} != {}", r_conf, comp_file);
@@ -128,16 +141,3 @@ fn preview(filename: & String) {
         }
     }
 }
-    //     v = regcomp(&r, comp_conf, REG_EXTENDED);
-    //     if (v != 0) {
-    //         fprintf(stderr, "Error creating regex for mime_conf %s\n", comp_conf);
-    //         continue;
-    //     }
-
-    //     if (regexec(&r, comp_file, 0, NULL, 0) == REG_NOMATCH) {
-    //         continue;
-    //     } else {
-    //         parse_args(rules[i].args);
-    //         break;
-    //     }
-    // }

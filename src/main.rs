@@ -47,10 +47,12 @@ fn main() {
         let r_conf = Regex::new(comp_conf).unwrap();
         if r_conf.is_match(&comp_file) {
             let r_extras = Regex::new(r"%riscou-extra([0-9])%").unwrap();
+            let r_filename = Regex::new(r".*(%riscou-filename%).*").unwrap();
             let args: &[&str] = rule.args().clone();
             let mut cargs: Vec<&str> = vec![];
             for arg in args.iter() {
-                if arg == &("%riscou-filename%") {
+                if r_filename.is_match(arg) {
+                    // aux = arg.replace("%riscou-filename%", &filename);
                     cargs.push(&filename);
                 } else if r_extras.is_match(arg) {
                     let caps = r_extras.captures(arg).unwrap();

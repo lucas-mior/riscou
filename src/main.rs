@@ -7,7 +7,7 @@ use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
-// use regex::Regex;
+use regex::Regex;
 use named_tuple::named_tuple;
 
 fn usage() {
@@ -118,25 +118,16 @@ fn preview(filename: & String) {
             let path = Path::new(filename);
             comp_file = tree_magic::from_filepath(path);
         }
-        println!("comp_conf: {}", comp_conf);
-        println!("comp_file: {}", comp_file);
+        let r_conf = Regex::new(comp_conf).unwrap();
+        if r_conf.is_match(&comp_file) {
+            println!("MATCH: {} == {}", r_conf, comp_file);
+            break;
+        } else {
+            println!("NOMATCH: {} != {}", r_conf, comp_file);
+            continue;
+        }
     }
 }
-    //     mime_conf = rules[i].mime;
-    //     if (!strncmp(mime_conf, "fpath", 5)) {
-    //         comp_conf = mime_conf + 6;
-    //         while (*comp_conf == ' ')
-    //             comp_conf++;
-    //         comp_file = filename;
-    //     } else {
-    //         magic_t m;
-    //         comp_conf = mime_conf;
-    //         m = magic_open(MAGIC_MIME_TYPE);
-    //         magic_load(m, NULL);
-    //         mime_file = (char *) magic_file(m, filename);
-    //         comp_file = mime_file;
-    //     }
-
     //     v = regcomp(&r, comp_conf, REG_EXTENDED);
     //     if (v != 0) {
     //         fprintf(stderr, "Error creating regex for mime_conf %s\n", comp_conf);

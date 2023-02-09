@@ -1,4 +1,5 @@
 extern crate tree_magic;
+use bat::PrettyPrinter;
 
 use std::process::exit;
 use std::fs;
@@ -69,7 +70,14 @@ fn main() {
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
         } else {
-            continue;
+            let text = Regex::new("text/*").unwrap();
+            if text.is_match(&comp_file) {
+                PrettyPrinter::new()
+                    .input_file(&filename)
+                    .print()
+                    .unwrap();
+                break;
+            }
         }
     }
 }
@@ -84,5 +92,32 @@ named_tuple!(
 );
 
 static RULES: &[Rule<'_>] = &[
-Rule((".+",                     &["file", "--mime-type", "%riscou-filename%"])),
+Rule(("fpath v\\S[1,3]::",     &["vfile.sh", "%riscou-filename%"])),
+Rule(("fpath g\\S[1,3]::",     &["gdir.sh", "%riscou-filename%"])),
+Rule(("fpath .+\\.fen$",       &["fen.sh", "%riscou-filename%"])),
+Rule(("text/.*",               &["bat", "-p", "--pager=never", "--color=always", "%riscou-filename%"])),
+Rule(("inode/directory",       &["ls", "-1A", "--color", "%riscou-filename%"])),
+Rule(("ms(word|-exce|-powe)",  &["printf", "💩💩💩💩💩💩💩💩💩\n%s\n💩💩💩💩💩💩💩💩💩", "%riscou-filename%"])),
+Rule(("opendoc.+spreadsheet",  &["ods.sh", "%riscou-filename%"])),
+Rule(("officed.+spreadsheet",  &["xlsx.sh", "%riscou-filename%"])),
+Rule(("office.+word",          &["docx.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("office.+pres",          &["ppt.sh", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("opendocument",          &["odt2txt", "%riscou-filename%"])),
+Rule(("application/pdf",       &["pdf.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("application/csv",       &["column", "-t", "-s", ",", "%riscou-filename%"])),
+Rule(("application/json",      &["head", "-n", "40", "%riscou-filename%"])),
+Rule(("application/.*execu.+", &["objdump", "-T", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("application/x-objec.+", &["objdump", "-T", "%riscou-filename%", "%riscou-extra0%"])),
+Rule(("application/zip",       &["unzip", "-l", "%riscou-filename%"])),
+Rule(("application/gzip",      &["tar", "tf", "%riscou-filename%"])),
+Rule(("application/x-subrip",  &["/usr/bin/cat", "%riscou-filename%"])),
+Rule(("fpath .+\\.ff$",        &["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("fpath .+\\.[1-9]$",     &["man", "%riscou-filename%"])),
+Rule(("image/.*dwg",           &["stat", "%riscou-filename%"])),
+Rule(("image/.*xml",           &["head", "-n", "40", "%riscou-filename%"])),
+Rule(("image/.*",              &["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("application/x-riff",    &["stiv", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("audio/.*",              &["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule(("video/.*",              &["vid.sh", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"])),
+Rule((".+",                    &["file", "--mime-type", "%riscou-filename%"])),
 ];

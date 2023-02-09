@@ -36,7 +36,7 @@ fn main() {
         let comp_conf;
         let comp_file: String;
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
-            comp_conf = &mime[5..];
+            comp_conf = &mime[6..];
             comp_file = filename.to_string();
         } else {
             comp_conf = &mime;

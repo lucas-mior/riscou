@@ -45,6 +45,7 @@ fn main() {
             comp_file = tree_magic::from_filepath(path);
         }
         let r_conf = Regex::new(comp_conf).unwrap();
+        let mut string: String;
         if r_conf.is_match(&comp_file) {
             let r_extras = Regex::new(r"%riscou-extra([0-9])%").unwrap();
             let r_filename = Regex::new(r".*(%riscou-filename%).*").unwrap();
@@ -52,8 +53,8 @@ fn main() {
             let mut cargs: Vec<&str> = vec![];
             for arg in args.iter() {
                 if r_filename.is_match(arg) {
-                    // aux = arg.replace("%riscou-filename%", &filename);
-                    cargs.push(&filename);
+                    string = arg.replace("%riscou-filename%", &filename);
+                    cargs.push(Box::leak(Box::new(string)));
                 } else if r_extras.is_match(arg) {
                     let caps = r_extras.captures(arg).unwrap();
                     let x = caps.get(1).map_or("", |m| m.as_str());

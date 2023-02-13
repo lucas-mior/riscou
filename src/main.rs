@@ -30,6 +30,7 @@ fn main() {
     };
 
     let filename = path;
+    let mut may_be_text = true;
     let extras = Vec::from_iter(argv[2..].iter().cloned());
     for rule in RULES {
         let mime = rule.0;
@@ -67,7 +68,7 @@ fn main() {
             }
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
-        } else {
+        } else if may_be_text {
             let text = Regex::new("text/*").unwrap();
             if text.is_match(&comp_file) {
                 PrettyPrinter::new()
@@ -75,6 +76,8 @@ fn main() {
                     .print()
                     .unwrap();
                 break;
+            } else {
+                may_be_text = false;
             }
         }
     }

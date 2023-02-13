@@ -30,6 +30,7 @@ fn main() {
     };
 
     let filename = path;
+    let mut fpath = false;
     let mut may_be_text = true;
     let extras = Vec::from_iter(argv[2..].iter().cloned());
     for rule in RULES {
@@ -39,7 +40,9 @@ fn main() {
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
             comp_conf = &mime[6..];
             comp_file = filename.to_string();
+            fpath = true;
         } else {
+            fpath = false;
             comp_conf = &mime;
             let path = Path::new(&filename);
             comp_file = tree_magic::from_filepath(path);
@@ -68,8 +71,8 @@ fn main() {
             }
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
-        } else if may_be_text {
-            let text = Regex::new("text/*").unwrap();
+        } else if may_be_text && !fpath {
+            let text = Regex::new("text/.*").unwrap();
             if text.is_match(&comp_file) {
                 PrettyPrinter::new()
                     .input_file(&filename)

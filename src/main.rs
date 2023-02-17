@@ -37,6 +37,7 @@ fn main() {
     let mut found = false;
     let mut may_be_text = true;
     let extras = Vec::from_iter(argv[2..].iter().cloned());
+
     for rule in RULES {
         let mime = rule.0;
         let comp_conf;
@@ -94,4 +95,8 @@ fn main() {
 }
 
 static RULES: &[(&str, &'static [&'static str])] = &[
+    /* Examples: 
+    ("fpath .+\\.ext$", &["program0", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"]),
+    ("image/.*",        &["program1", "%riscou-filename%"]),
+    */
 ];

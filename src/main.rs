@@ -31,23 +31,21 @@ fn main() {
 
     let filename = path;
     let path = Path::new(&filename);
-    let mut comp_file = tree_magic::from_filepath(path);
+    let file_mime = tree_magic::from_filepath(path);
+    let file_name = filename.to_string();
+    let mut comp_file: &String;
 
-    let mut fpath;
     let mut found = false;
-    let mut may_be_text = true;
     let extras = Vec::from_iter(argv[2..].iter().cloned());
-
     for rule in RULES {
         let mime = rule.0;
         let comp_conf;
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
             comp_conf = &mime[6..];
-            comp_file = filename.to_string();
-            fpath = true;
+            comp_file = &file_name;
         } else {
-            fpath = false;
             comp_conf = &mime;
+            comp_file = &file_mime;
         }
         let r_conf = Regex::new(comp_conf).unwrap();
         let mut string: String;
@@ -74,7 +72,7 @@ fn main() {
             found = true;
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
-        } else if may_be_text && !fpath {
+        } else {
             let text = Regex::new("text/.*").unwrap();
             if text.is_match(&comp_file) {
                 PrettyPrinter::new()
@@ -83,20 +81,14 @@ fn main() {
                     .unwrap();
                 found = true;
                 break;
-            } else {
-                may_be_text = false;
             }
         }
     }
     if !found {
         println!("No previewer set for file:");
-        println!("{}: {}", filename, comp_file);
+        println!("{}: {}", filename, file_mime);
     }
 }
 
 static RULES: &[(&str, &'static [&'static str])] = &[
-    /* Examples: 
-    ("fpath .+\\.ext$", &["program0", "%riscou-filename%", "%riscou-extra0%", "%riscou-extra1%", "%riscou-extra2%", "%riscou-extra3%"]),
-    ("image/.*",        &["program1", "%riscou-filename%"]),
-    */
 ];

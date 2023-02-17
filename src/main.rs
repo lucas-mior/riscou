@@ -30,13 +30,16 @@ fn main() {
     };
 
     let filename = path;
-    let mut fpath = false;
+    let path = Path::new(&filename);
+    let mut comp_file = tree_magic::from_filepath(path);
+
+    let mut fpath;
+    let mut found = false;
     let mut may_be_text = true;
     let extras = Vec::from_iter(argv[2..].iter().cloned());
     for rule in RULES {
         let mime = rule.0;
         let comp_conf;
-        let comp_file: String;
         if mime.len() >= 4 && &mime[0..5] == "fpath" { 
             comp_conf = &mime[6..];
             comp_file = filename.to_string();
@@ -44,8 +47,6 @@ fn main() {
         } else {
             fpath = false;
             comp_conf = &mime;
-            let path = Path::new(&filename);
-            comp_file = tree_magic::from_filepath(path);
         }
         let r_conf = Regex::new(comp_conf).unwrap();
         let mut string: String;
@@ -69,6 +70,7 @@ fn main() {
                     cargs.push(arg);
                 }
             }
+            found = true;
             Command::new(cargs[0]).args(cargs[1..].iter()).exec();
             break;
         } else if may_be_text && !fpath {
@@ -78,14 +80,18 @@ fn main() {
                     .input_file(&filename)
                     .print()
                     .unwrap();
+                found = true;
                 break;
             } else {
                 may_be_text = false;
             }
         }
     }
+    if !found {
+        println!("No previewer set for file:");
+        println!("{}: {}", filename, comp_file);
+    }
 }
 
 static RULES: &[(&str, &'static [&'static str])] = &[
-(".+",                    &["file", "--mime-type", "%riscou-filename%"]),
 ];

@@ -48,7 +48,6 @@ fn main() {
             comp_file = &file_mime;
         }
         let r_conf = Regex::new(comp_conf).unwrap();
-        let mut string: String;
         if r_conf.is_match(&comp_file) {
             let r_extras = Regex::new(r"%riscou-extra([0-9])%").unwrap();
             let r_filename = Regex::new(r".*(%riscou-filename%).*").unwrap();
@@ -56,14 +55,15 @@ fn main() {
             let mut cargs: Vec<&str> = vec![];
             for arg in args.iter() {
                 if r_filename.is_match(arg) {
-                    string = arg.replace("%riscou-filename%", &filename);
+                    let string = arg.replace("%riscou-filename%", &filename);
                     cargs.push(Box::leak(Box::new(string)));
                 } else if r_extras.is_match(arg) {
                     let caps = r_extras.captures(arg).unwrap();
                     let x = caps.get(1).map_or("", |m| m.as_str());
                     let i = x.parse::<usize>().unwrap();
                     if i < extras.len() {
-                        cargs.push(&extras[i]);
+                        let ext = r_extras.replace(arg, &extras[i]).into_owned();
+                        cargs.push(Box::leak(Box::new(ext)));
                     }
                 } else {
                     cargs.push(arg);

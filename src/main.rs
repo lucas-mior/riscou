@@ -1,7 +1,7 @@
 extern crate tree_magic;
 use bat::PrettyPrinter;
 
-use std::process::exit;
+use std::process;
 use std::fs;
 use std::env;
 use std::path::Path;
@@ -15,7 +15,7 @@ fn usage() {
 ARGUMENTS:
 filename: file to preview
 extras: extra arguments passed to command");
-    exit(1);
+    process::exit(1);
 }
 
 fn main() {
@@ -26,7 +26,7 @@ fn main() {
 
     let path = match fs::canonicalize(&argv[1]) {
         Ok(path) => path.to_string_lossy().into_owned(),
-        Err(_) => {usage(); exit(1)},
+        Err(_) => {usage(); process::exit(1)},
     };
 
     let filename = path;
